@@ -9,15 +9,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.midas.kgrammer.ui.NavigationKeys.Arg.QUIZ_ID
 import com.midas.kgrammer.ui.feature.main.MainScreen
-import com.midas.kgrammer.ui.feature.question.QuestionListScreen
+import com.midas.kgrammer.ui.feature.quiz.list.QuizListScreen
+import com.midas.kgrammer.ui.feature.quiz.list.QuizListViewModel
+import com.midas.kgrammer.ui.feature.quiz.play.QuizPlayScreen
+import com.midas.kgrammer.ui.feature.quiz.play.QuizPlayViewModel
 import com.midas.kgrammer.ui.feature.review.ReviewScreen
 import com.midas.kgrammer.ui.theme.KGrammerTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.receiveAsFlow
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    FoodApp()
+                    KGrammerApp()
                 }
             }
         }
@@ -39,19 +49,27 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DefaultPreview() {
     KGrammerTheme {
-        FoodApp()
+        KGrammerApp()
     }
 }
 
 @Composable
-private fun FoodApp() {
+private fun KGrammerApp() {
     val navController = rememberNavController()
     NavHost(navController, startDestination = NavigationKeys.Route.ROUTE_MAIN) {
         composable(route = NavigationKeys.Route.ROUTE_MAIN) {
             MainDestination(navController)
         }
-        composable(route = NavigationKeys.Route.ROUTE_QUESTION_LIST) {
-            QuestionListDestination()
+        composable(route = NavigationKeys.Route.ROUTE_QUIZ_LIST) {
+            QuizListDestination(navController)
+        }
+        composable(
+            route = NavigationKeys.Route.ROUTE_QUIZ_LIST_PLAY,
+            arguments = listOf(navArgument(QUIZ_ID) {
+                type = NavType.LongType
+            })
+        ) {
+            QuizPlayDestination()
         }
         composable(route = NavigationKeys.Route.ROUTE_REVIEW) {
             ReviewDestination()
@@ -70,9 +88,23 @@ private fun MainDestination(navController: NavHostController) {
 }
 
 @Composable
-private fun QuestionListDestination() {
-    //val viewModel: FoodCategoryDetailsViewModel = hiltViewModel()
-    QuestionListScreen()
+private fun QuizListDestination(navController: NavHostController) {
+    val viewModel: QuizListViewModel = hiltViewModel()
+    QuizListScreen(
+        state = viewModel.state,
+        effectFlow = viewModel.effects.receiveAsFlow(),
+        onNavigationRequested = { itemId ->
+            navController.navigate("${NavigationKeys.Route.ROUTE_QUIZ_LIST}/${itemId}")
+        }
+    )
+}
+
+@Composable
+private fun QuizPlayDestination() {
+    val viewModel: QuizPlayViewModel = hiltViewModel()
+    QuizPlayScreen(
+        state = viewModel.state
+    )
 }
 
 @Composable
@@ -83,9 +115,14 @@ private fun ReviewDestination() {
 
 object NavigationKeys {
 
+    object Arg {
+        const val QUIZ_ID = "quizId"
+    }
+
     object Route {
         const val ROUTE_MAIN = "route_main"
-        const val ROUTE_QUESTION_LIST = "route_question_list"
+        const val ROUTE_QUIZ_LIST = "route_quiz_list"
+        const val ROUTE_QUIZ_LIST_PLAY = "$ROUTE_QUIZ_LIST/{$QUIZ_ID}"
         const val ROUTE_REVIEW = "route_review"
     }
 

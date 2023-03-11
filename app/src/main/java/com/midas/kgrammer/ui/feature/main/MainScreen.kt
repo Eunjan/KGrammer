@@ -43,7 +43,7 @@ fun MainScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp, vertical = 5.dp),
                 onClick = {
-                    onNavigationRequested.invoke(NavigationKeys.Route.ROUTE_QUESTION_LIST)
+                    onNavigationRequested.invoke(NavigationKeys.Route.ROUTE_QUIZ_LIST)
                 }
             ) {
                 Text(text = stringResource(id = R.string.start))
@@ -60,6 +60,4 @@ fun MainScreen(
             }
         }
     }
-
-
 }
