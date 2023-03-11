@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">오늘부터 맞춤법</string>
+    <string name="start">문제 풀러 가기</string>
+    <string name="review_note">오답 노트</string>
+</resources>
