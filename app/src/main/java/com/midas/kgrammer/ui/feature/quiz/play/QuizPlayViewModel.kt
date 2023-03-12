@@ -6,7 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.midas.kgrammer.data.model.QuizItem
 import com.midas.kgrammer.data.repository.QuizListRepository
+import com.midas.kgrammer.data.repository.QuizRepository
 import com.midas.kgrammer.ui.NavigationKeys
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -15,26 +17,27 @@ import javax.inject.Inject
 @HiltViewModel
 class QuizPlayViewModel @Inject constructor(
     private val stateHandle: SavedStateHandle,
-    private val repository: QuizListRepository
+    private val repository: QuizRepository
 ) : ViewModel() {
 
     var state by mutableStateOf(
         QuizPlayContract.State(
-            null, listOf(
-            )
+            null
         )
     )
         private set
 
     init {
         viewModelScope.launch {
-            val categoryId = stateHandle.get<Long>(NavigationKeys.Arg.QUIZ_ID)
+            val quizId = stateHandle.get<Long>(NavigationKeys.Arg.QUIZ_ID)
                 ?: throw IllegalStateException("No quizId was passed to destination.")
-            val quizes = repository.getQuizList()
-            val quiz = quizes.first { it.id == categoryId }
-            state = state.copy(quiz = quiz)
-//            val foodItems = repository.getMealsByCategory(categoryId)
-//            state = state.copy(categoryFoodItems = foodItems)
+            val quiz = repository.getQuiz(quizId)
+            quiz?.let {
+                state = state.copy(quizItem = QuizItem(
+                    id = quizId,
+                    data = it.data.shuffled()
+                ))
+            }
         }
     }
 

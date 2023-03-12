@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 fun QuizPlayScreen(
     state: QuizPlayContract.State
 ) {
-    Text(text =  state.quiz?.id.toString())
+    Text(text =  state.quizItem?.id.toString())
+
 }
 
